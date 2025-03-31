@@ -1,6 +1,8 @@
 import { execSync } from "node:child_process";
 import fs from "node:fs/promises";
 import path from "node:path";
+import chalk from "chalk";
+import { templatesDir } from "../helper/constant";
 import type { ProjectConfig } from "../types";
 
 export const copyTemplate = async (
@@ -10,9 +12,7 @@ export const copyTemplate = async (
 ): Promise<void> => {
 	try {
 		await fs.mkdir(targetPath, { recursive: true });
-
 		const entries = await fs.readdir(templatePath, { withFileTypes: true });
-
 		for (const entry of entries) {
 			const srcPath = path.join(templatePath, entry.name);
 			const destPath = path.join(targetPath, entry.name);
@@ -22,8 +22,10 @@ export const copyTemplate = async (
 			} else {
 				if (entry.name.endsWith(".template")) {
 					const content = await fs.readFile(srcPath, "utf-8");
-					const processed = processTemplateContent(content, config);
-					await fs.writeFile(destPath.replace(".template", ""), processed);
+					//TODO: currently not processing the template content
+					//TODO: have to rethink about this
+					// const processed = processTemplateContent(content, config);
+					await fs.writeFile(destPath.replace(".template", ""), content);
 				} else {
 					await fs.copyFile(srcPath, destPath);
 				}
@@ -36,30 +38,67 @@ export const copyTemplate = async (
 	}
 };
 
-const processTemplateContent = (
-	content: string,
-	config: ProjectConfig,
-): string => {
-	return content
-		.replace(/\{\{name\}\}/g, config.name)
-		.replace(/\{\{#if husky\}\}([\s\S]*?)\{\{\/if\}\}/g, (_, block) =>
-			config.husky ? block : "",
-		)
-		.replace(/\{\{#if drizzle\}\}([\s\S]*?)\{\{\/if\}\}/g, (_, block) =>
-			config.drizzle ? block : "",
-		)
-		.replace(/\{\{#if prisma\}\}([\s\S]*?)\{\{\/if\}\}/g, (_, block) =>
-			config.prisma ? block : "",
-		);
-};
+//TODO: fix this
+// const processTemplateContent = (
+// 	content: string,
+// 	config: ProjectConfig,
+// ): string => {
+// 	return content
+// 		.replace(/\{\{name\}\}/g, config.name)
+// 		.replace(/\{\{#if husky\}\}([\s\S]*?)\{\{\/if\}\}/g, (_, block) =>
+// 			config.husky ? block : "",
+// 		)
+// 		.replace(/\{\{#if drizzle\}\}([\s\S]*?)\{\{\/if\}\}/g, (_, block) =>
+// 			config.drizzle ? block : "",
+// 		)
+// 		.replace(/\{\{#if prisma\}\}([\s\S]*?)\{\{\/if\}\}/g, (_, block) =>
+// 			config.prisma ? block : "",
+// 		);
+// };
 
 export const setupDatabase = async (
 	config: ProjectConfig,
 	projectPath: string,
 ): Promise<void> => {
-	if (config.drizzle || config.prisma) {
-		const dbScriptPath = path.join(__dirname, "../../templates/start-database");
-		await copyTemplate(dbScriptPath, path.join(projectPath, "scripts"), config);
+	if (!config.drizzle && !config.prisma) return;
+	try {
+		if (config.drizzle) {
+			const drizzleTemplatePath = path.join(
+				templatesDir,
+				"packages",
+				"database",
+				"drizzle",
+				`drizzle-${config.database}`,
+			);
+			const targetPath = path.join(projectPath, "packages", "database");
+			await copyTemplate(drizzleTemplatePath, targetPath, config);
+			const dbScriptPath = path.join(templatesDir, "start-database");
+			const scriptsTargetPath = path.join(projectPath, "scripts");
+			try {
+				await fs.access(dbScriptPath);
+				await copyTemplate(dbScriptPath, scriptsTargetPath, config);
+			} catch (error) {
+				console.log(
+					chalk.yellow("⚠️  Database startup scripts not found, skipping..."),
+				);
+			}
+		}
+		if (config.prisma) {
+			const prismaTemplatePath = path.join(
+				templatesDir,
+				"packages",
+				"database",
+				"prisma",
+				`prisma-${config.database}`,
+			);
+
+			const targetPath = path.join(projectPath, "packages", "database");
+			await copyTemplate(prismaTemplatePath, targetPath, config);
+		}
+	} catch (error) {
+		throw new Error(
+			`Failed to setup database: ${error instanceof Error ? error.message : "Unknown error"}`,
+		);
 	}
 };
 
