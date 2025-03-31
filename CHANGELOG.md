@@ -49,13 +49,3 @@ Note: Currently, the project only includes the CLI setup and infrastructure. Act
 - Template processing for conditional blocks
 - Directory handling for existing projects
 
-## [0.1.0] - 2024-03-31
-
-### Added
-- Basic project structure
-- Core functionality
-- CLI interface
-- Documentation
-
-[Unreleased]: https://github.com/yourusername/tgen/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/yourusername/tgen/releases/tag/v0.1.0 
