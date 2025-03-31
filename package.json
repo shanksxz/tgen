@@ -7,7 +7,10 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "format-and-lint": "biome check ./src",
+    "format-and-lint:fix": "biome check --write ./src",
+    "prepare": "husky"
   },
   "keywords": [],
   "author": "",
@@ -18,10 +21,12 @@
     "inquirer": "^12.5.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
     "@types/inquirer": "^9.0.7",
     "@types/node": "^22.13.11",
     "drizzle-kit": "^0.30.5",
     "drizzle-orm": "^0.41.0",
+    "husky": "^9.1.7",
     "pg": "^8.14.1",
     "tsup": "^8.4.0",
     "typescript": "^5.8.2"
