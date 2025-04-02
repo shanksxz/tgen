@@ -16,14 +16,17 @@ export const copyTemplate = async (
 		for (const entry of entries) {
 			const srcPath = path.join(templatePath, entry.name);
 			const destPath = path.join(targetPath, entry.name);
-
 			if (entry.isDirectory()) {
+				//? skip node_modules directory
+				if (entry.name === "node_modules") {
+					continue;
+				}
 				await copyTemplate(srcPath, destPath, config);
 			} else {
 				if (entry.name.endsWith(".template")) {
 					const content = await fs.readFile(srcPath, "utf-8");
 					//TODO: currently not processing the template content
-					//TODO: have to rethink about this
+					//TODO: have to re-think about this
 					// const processed = processTemplateContent(content, config);
 					await fs.writeFile(destPath.replace(".template", ""), content);
 				} else {
@@ -38,7 +41,7 @@ export const copyTemplate = async (
 	}
 };
 
-//TODO: fix this
+//TODO: ai generated code, need to refactor
 // const processTemplateContent = (
 // 	content: string,
 // 	config: ProjectConfig,

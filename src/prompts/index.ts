@@ -1,4 +1,5 @@
 import inquirer from "inquirer";
+import { convertAnswersToConfig, promptSetupFlow } from "./flow";
 
 export const askProjectPreferences = async (options: {
 	skipGit?: boolean;
@@ -115,3 +116,5 @@ export const askDatabasePreferences = async (): Promise<{
 		prisma: orm === "prisma",
 	};
 };
+
+export { promptSetupFlow, convertAnswersToConfig };
