@@ -46,6 +46,12 @@ Note: Currently, the project only includes the CLI setup and infrastructure. Act
   - Improved package.json updates for auth dependencies
   - Support for both better-auth and next-auth configurations
   - Automatic ORM adapter installation (Drizzle/Prisma)
+- Modern CLI experience with Clack
+  - Replaced inquirer with @clack/prompts for more intuitive prompting
+  - Added visual spinners for long-running tasks
+  - Better color formatting and visual hierarchy
+  - Improved cancellation handling and user feedback
+  - Progress indicators for setup steps
 
 ### Changed
 - Converted project setup to class-based architecture
@@ -60,6 +66,10 @@ Note: Currently, the project only includes the CLI setup and infrastructure. Act
   - Moved from hardcoded versions to centralized version management
   - Added type safety for package versions
   - Improved package.json update logic
+- Improved CLI experience
+  - Modernized UI with Clack
+  - Smarter directory and project name handling
+  - Better error display and recovery options
 
 ### Fixed
 - Console output ordering in setup process
@@ -69,4 +79,6 @@ Note: Currently, the project only includes the CLI setup and infrastructure. Act
 - Fixed package.json update logic to preserve existing dependencies
 - Fixed directory structure issues in Next.js apps
 - Improved error handling in dependency management
+- Fixed project name handling when directory is specified
+- Fixed CLI behavior when run without arguments
 
