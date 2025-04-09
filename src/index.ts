@@ -1,29 +1,20 @@
 import path from "node:path";
 import process from "node:process";
-import { fileURLToPath } from "node:url";
+import * as p from "@clack/prompts";
 import chalk from "chalk";
-import inquirer from "inquirer";
-import {
-	deleteDirectoryContents,
-	isDirectoryEmpty,
-	validateTemplate,
-} from "./helper/validator";
 import { createCliProgram } from "./project/cli";
+import { promptSetupFlowWithClack } from "./project/flow";
 import { setupProject } from "./project/setup";
-import { convertAnswersToConfig, promptSetupFlow } from "./prompts/flow";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const rootDir = path.join(__dirname, "../");
-const templatesDir = path.join(rootDir, "templates");
+import { deleteDirectoryContents, isDirectoryEmpty } from "./utils/validator";
 
 const runCli = async () => {
-	const program = createCliProgram().parse();
-
 	try {
-		console.log(chalk.blue("\n🚀 Initializing turbo-repo project..."));
-		const options = program.opts();
-		const directory = program.args[0];
+		const program = createCliProgram().parse();
+
+		//TODO: add options support
+		// const options = program.opts();
+		//TODO: currently only supports current directory
+		const directory = program.args[0] || ".";
 
 		const projectPath = path.resolve(process.cwd(), directory);
 		const projectName =
@@ -31,45 +22,52 @@ const runCli = async () => {
 				? path.basename(process.cwd())
 				: path.basename(projectPath);
 
-		console.log(chalk.cyan("\n📋 Project name:"), projectName);
-		console.log(chalk.cyan("📁 Project path:"), projectPath);
+		p.intro(chalk.bold(chalk.blue("🚀 Initializing turbo-repo project...")));
+		p.log.info(chalk.cyan(`📋 Project name: ${projectName}`));
+		p.log.info(chalk.cyan(`📁 Project path: ${projectPath}`));
 
 		//? check if directory exists and is not empty
 		const isEmpty = await isDirectoryEmpty(projectPath);
 		if (!isEmpty) {
-			const { proceed } = await inquirer.prompt([
-				{
-					type: "confirm",
-					name: "proceed",
-					message:
-						"⚠️  The directory is not empty. Would you like to clear its contents?",
-					default: false,
-				},
-			]);
-			if (!proceed) {
-				console.log(chalk.yellow("⚠️  Operation cancelled"));
+			const proceed = await p.confirm({
+				message:
+					"⚠️  The directory is not empty. Would you like to clear its contents?",
+				initialValue: false,
+			});
+
+			if (p.isCancel(proceed) || !proceed) {
+				p.cancel("Operation cancelled");
 				process.exit(0);
 			}
+
+			const s = p.spinner();
+			s.start("Clearing directory contents...");
 			await deleteDirectoryContents(projectPath);
+			s.stop("Directory cleared");
 		}
 
-		const answers = await promptSetupFlow(options);
-		const projectConfig = convertAnswersToConfig(answers, projectName);
+		const projectConfig = await promptSetupFlowWithClack(projectName);
 
-		console.log(chalk.cyan("\n🔍 Project configuration:"), projectConfig);
+		p.log.info(chalk.cyan("\n🔍 Project configuration:"));
+		for (const [key, value] of Object.entries(projectConfig)) {
+			if (value !== undefined && value !== false) {
+				p.log.info(
+					`  ${chalk.green(key)}: ${chalk.white(JSON.stringify(value))}`,
+				);
+			}
+		}
 
-		//? do i even need to check if base template exists?
-		// const baseTemplatePath = path.join(templatesDir, "base");
-		// const isBaseValid = await validateTemplate(baseTemplatePath);
-		// if (!isBaseValid) {
-		//     throw new Error("Base turbo-repo template not found!");
-		// }
-
+		const s = p.spinner();
+		s.start("Setting up your project...");
 		await setupProject(projectPath, projectName, projectConfig);
+
+		s.stop("Project setup complete!");
+		p.outro(chalk.green("✨ Your turbo-repo project is ready! Happy coding!"));
 	} catch (error) {
-		console.log(
-			chalk.red("\n❌ Error:"),
-			error instanceof Error ? error.message : "An unknown error occurred",
+		p.log.error(
+			chalk.red(
+				`\n❌ Error: ${error instanceof Error ? error.message : String(error)}`,
+			),
 		);
 		process.exit(1);
 	}

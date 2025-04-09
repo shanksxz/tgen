@@ -6,7 +6,7 @@ import {
 	type AllDevDependenciesVersions,
 	packageDependenciesVersions,
 	packageDevDependenciesVersions,
-} from "./constant";
+} from "../utils/constant";
 
 export const addPackageDependencies = (
 	appPath: string,

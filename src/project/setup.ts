@@ -1,15 +1,15 @@
 import path from "node:path";
 import chalk from "chalk";
-import { addPackageDependencies } from "../helper/add-deps";
-import { templatesDir } from "../helper/constant";
-import type { ProjectConfig } from "../types";
-import { getTemplatePath } from "../types/templates";
 import {
+	addPackageDependencies,
 	copyTemplate,
 	initGit,
 	installDependencies,
 	setupDatabase,
-} from "../utils/template";
+} from "../helper";
+import type { ProjectConfig } from "../types";
+import { getTemplatePath } from "../types/templates";
+import { templatesDir } from "../utils/constant";
 
 export class ProjectSetup {
 	private projectPath: string;
@@ -34,7 +34,7 @@ export class ProjectSetup {
 			// await this.setupBackend();
 			await this.setupDatabaseIfNeeded();
 			await this.setupAuthIfNeeded();
-			await this.setupAddons();
+			// await this.setupAddons();
 			await this.initializeGitIfNeeded();
 			await this.installDependenciesIfNeeded();
 			this.displayNextSteps();
@@ -148,24 +148,24 @@ export class ProjectSetup {
 		console.log(chalk.green(`✓ ${this.projectConfig.auth} setup complete`));
 	}
 
-	private async setupAddons() {
-		if (!this.projectConfig.addons || this.projectConfig.addons.length === 0)
-			return;
+	// private async setupAddons() {
+	// 	if (!this.projectConfig.addons || this.projectConfig.addons.length === 0)
+	// 		return;
 
-		console.log(chalk.yellow("\n📦 Setting up addons..."));
+	// 	console.log(chalk.yellow("\n📦 Setting up addons..."));
 
-		for (const addon of this.projectConfig.addons) {
-			console.log(chalk.yellow(`\n🧩 Adding ${addon} package...`));
-			const addonTemplatePath = path.join(templatesDir, "packages", addon);
-			const addonTargetPath = path.join(this.projectPath, "packages", addon);
-			await copyTemplate(
-				addonTemplatePath,
-				addonTargetPath,
-				this.projectConfig,
-			);
-			console.log(chalk.green(`✓ ${addon} package added`));
-		}
-	}
+	// 	for (const addon of this.projectConfig.addons) {
+	// 		console.log(chalk.yellow(`\n🧩 Adding ${addon} package...`));
+	// 		const addonTemplatePath = path.join(templatesDir, "packages", addon);
+	// 		const addonTargetPath = path.join(this.projectPath, "packages", addon);
+	// 		await copyTemplate(
+	// 			addonTemplatePath,
+	// 			addonTargetPath,
+	// 			this.projectConfig,
+	// 		);
+	// 		console.log(chalk.green(`✓ ${addon} package added`));
+	// 	}
+	// }
 
 	private async initializeGitIfNeeded() {
 		if (this.projectConfig.skipGit) return;
@@ -178,40 +178,31 @@ export class ProjectSetup {
 	private async installDependenciesIfNeeded() {
 		if (this.projectConfig.skipInstall) return;
 
-		const packageManager = this.projectConfig.pnpm
-			? "pnpm"
-			: this.projectConfig.npm
-				? "npm"
-				: "bun";
-		console.log(
-			chalk.yellow(`\n📦 Installing dependencies using ${packageManager}...`),
-		);
+		// const packageManager = this.projectConfig.packageManager
+		// ? this.projectConfig.packageManager
+		// : "pnpm";
+		// : "bun";
+		console.log(chalk.yellow("\n📦 Installing dependencies using pnpm..."));
 		await installDependencies(this.projectPath, this.projectConfig);
 		console.log(chalk.green("✓ Dependencies installed"));
 	}
 
 	private displayNextSteps() {
-		const packageManager = this.projectConfig.pnpm
-			? "pnpm"
-			: this.projectConfig.npm
-				? "npm"
-				: "bun";
+		// const packageManager = this.projectConfig.pnpm
+		// 	? "pnpm"
+		// 	: this.projectConfig.npm
+		// 		? "npm"
+		// 		: "bun";
 
 		console.log(chalk.green("\n✅ Turbo-repo project generated successfully!"));
 		console.log(chalk.cyan("\n📝 Next steps:"));
 		console.log(chalk.white(`  cd ${this.projectName}`));
 
 		if (!this.projectConfig.skipInstall) {
-			console.log(
-				chalk.white(`  ${packageManager} dev     # Start development server`),
-			);
+			console.log(chalk.white("  pnpm dev     # Start development server"));
 		} else {
-			console.log(
-				chalk.white(`  ${packageManager} install  # Install dependencies`),
-			);
-			console.log(
-				chalk.white(`  ${packageManager} dev     # Start development server`),
-			);
+			console.log(chalk.white("  pnpm install  # Install dependencies"));
+			console.log(chalk.white("  pnpm dev     # Start development server"));
 		}
 	}
 }

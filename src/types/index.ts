@@ -11,22 +11,20 @@ export type ProjectConfig = {
 	template: TemplateType;
 	database: "postgres" | "sqlite" | "mysql" | "none";
 	husky: boolean;
-	npm: boolean;
-	pnpm: boolean;
-	bun: boolean;
+	// npm: boolean;
+	// pnpm: boolean;
+	// bun: boolean;
 	drizzle: boolean;
 	prisma: boolean;
 	install: boolean;
 	skipInstall: boolean;
 	skipGit: boolean;
-	turbo: boolean;
 	frontend?: string[];
-	backend?: string;
-	runtime?: string;
+	// backend?: string;
+	// runtime?: string;
 	auth?: "better-auth" | "next-auth" | "none";
-	addons?: string[];
-	examples?: string[];
-	typescript?: boolean;
+	// addons?: string[];
+	// examples?: string[];
 };
 
 export type Templates = {
